@@ -1,0 +1,4 @@
+start {
+    float i;
+    print(i%i);
+}

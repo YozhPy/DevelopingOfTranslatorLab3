@@ -1,0 +1,17 @@
+start {
+    float i,j;
+    input(i,j);
+    label first_lbl, second_lbl;
+
+    if(i>=j) goto first_lbl;
+    if(j<i) goto second_lbl;
+
+    first_lbl{
+        print(i-j);
+    }
+
+    second_lbl{
+        print(j-i);
+    }
+
+}

@@ -1,0 +1,15 @@
+start{
+    int i,j;
+
+    int goal, STEP;
+
+    label gt1;
+
+    input(var1, VAR2);
+
+    for i = 1 to goal by STEP
+            while(j<228)
+                j = j * i;
+            rof;
+    print(j);
+}

@@ -1,0 +1,4 @@
+start {
+    float i=15;
+    print(i!*i+1);
+}

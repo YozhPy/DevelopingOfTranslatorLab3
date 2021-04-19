@@ -1,0 +1,4 @@
+start {
+ int a;
+ int b = a + a + 2278;
+}
