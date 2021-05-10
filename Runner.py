@@ -8,19 +8,27 @@ def main():
         source_code = f.read()
         lexer = B2LangLexer(source_code)
         lexer.start()
-        lexer.print_symbols_table()
+        #lexer.print_symbols_table()
+        #lexer.print_label_table()
+        #lexer.print_const_table()
+        #lexer.print_ids_table()
         if not lexer.success:
             return False
-
-        parser = B2LangParser(lexer.table_of_symb)
+        parser = B2LangParser(lexer.table_of_symb, lexer.table_of_id, lexer.table_of_label)
         parser.run()
+        #print(parser.postfix_code)
+        #print(parser.table_of_label)
         if not parser.success:
             return False
-        translator = B2LangInterpreter(parser.postfix_code, lexer.tableOfId, lexer.tableOfConst, to_view=True)
+        translator = B2LangInterpreter(parser.postfix_code, parser.table_of_id, lexer.table_of_const,
+                                       parser.table_of_label, to_view=True)
         translator.run()
         if translator.success:
-            print(translator.table_of_ids)
-            print(translator.table_of_consts)
+            print("МОВА ПРОГРАМУВАННЯ B2LANG ХОЧЕ НАДРУКУВАТИ:")
+            for val in translator.final_msg:
+                print(val)
+            translator.pretty_pr_table_id()
+            translator.pretty_pr_table_label()
 
 
 if __name__ == '__main__':

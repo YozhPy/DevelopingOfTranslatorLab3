@@ -1,4 +1,5 @@
-start {
- int a;
- int b = a + a + 2278;
+start{
+   int i;
+   input(i*2);
+   print(i);
 }

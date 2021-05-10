@@ -14,11 +14,12 @@ class B2LangLexer:
         self.program_code = b2lang_code + ' '
         self.lenOfCode = len(self.program_code)
         # Tables
-        self.tableOfId = {}
-        self.tableOfConst = {}
-
         self.tableOfSymbols = PrettyTable(["#", "Лексема", "Токен", "Індекс"])
+
+        self.table_of_id = {}
+        self.table_of_const = {}
         self.table_of_symb = {}
+        self.table_of_label = {}
 
         # Current State
         self.state = states["initial"][0]
@@ -33,7 +34,7 @@ class B2LangLexer:
     def start(self):
         try:
             while self.numChar < self.lenOfCode:
-                self.char = self._next_char()
+                self.char = self._next_char()  # read next char
                 self.state = B2LangLexer._next_state(self.state, B2LangLexer._class_of_char(self.char))
                 if B2LangLexer._is_initial_state(self.state):
                     self.lexeme = ''
@@ -41,6 +42,8 @@ class B2LangLexer:
                     self.processing()
                 else:
                     self.lexeme += self.char
+                   # print(self.lexeme)
+            self.correct_label_and_id()
             print('Лексичний аналіз завершено. Успіх!')
         except SystemExit as err:
             self.success = False
@@ -52,7 +55,8 @@ class B2LangLexer:
             self.numLine += 1
             self.state = B2LangLexer.states['initial'][0]
 
-        elif self.state in (B2LangLexer.states['const'] + B2LangLexer.states['identifier']):
+        elif self.state in (B2LangLexer.states['const'] + B2LangLexer.states['identifier']
+                            + B2LangLexer.states['colon']):
             token = B2LangLexer._get_token(self.state, self.lexeme)
             if token != 'keyword':
                 index = self._get_index()
@@ -93,22 +97,31 @@ class B2LangLexer:
     def print_ids_table(self):
         print("Таблиця ідентифікаторів")
         tbl = PrettyTable(["Назва", "Індекс"])
-        for name, indx in self.tableOfId.items():
+        for name, indx in self.table_of_id.items():
             tbl.add_row([name, indx])
         print(tbl)
 
     def print_const_table(self):
         print("Таблиця констант")
         tbl = PrettyTable(["Константа", "Індекс"])
-        for cnst, indx in self.tableOfConst.items():
+        for cnst, indx in self.table_of_const.items():
+            tbl.add_row([cnst, indx])
+        print(tbl)
+
+    def print_label_table(self):
+        print("Таблиця міток")
+        tbl = PrettyTable(["Мітка", "Індекс"])
+        for cnst, indx in self.table_of_label.items():
             tbl.add_row([cnst, indx])
         print(tbl)
 
     def _get_index(self):
         if self.state in self.states['const'] or self.lexeme in ('true', 'false'):
-            return B2LangLexer._getSetID(self.state, self.lexeme, self.tableOfConst)
+            return B2LangLexer._getSetID(self.state, self.lexeme, self.table_of_const)
+        elif self.state in self.states['colon']:
+            return B2LangLexer._getSetID(self.state, self.lexeme, self.table_of_label)
         elif self.state in self.states['identifier']:
-            return B2LangLexer._getSetID(self.state, self.lexeme, self.tableOfId)
+            return B2LangLexer._getSetID(self.state, self.lexeme, self.table_of_id)
 
     def _next_char(self):
         char = self.program_code[self.numChar]
@@ -153,18 +166,27 @@ class B2LangLexer:
     @staticmethod
     def _getSetID(state, lexeme, table):
         index = table.get(lexeme)
+       # print(B2LangLexer._get_token(state, lexeme))
         if not index:
             index = len(table) + 1
-            if (token:= B2LangLexer._get_token(state,lexeme)) == 'ident':
+            if (token := B2LangLexer._get_token(state,lexeme)) == 'ident':
+                token = 'undefined'
+            table[lexeme] = (index, token)
+
+            if (token := B2LangLexer._get_token(state,lexeme)) == 'label':
                 token = 'undefined'
             table[lexeme] = (index, token)
 
             if lexeme in ('true', 'false'):
                 table[lexeme] += (eval(lexeme.title()),)
-            elif state in B2LangLexer.states['identifier']:
+            elif state in (B2LangLexer.states['identifier'] + B2LangLexer.states['colon']):
                 table[lexeme] += ('null',)
             else:
+             #   print(eval(f"{token}({lexeme})"))
                 table[lexeme] += (eval(f"{token}({lexeme})"), )
         return index
 
-
+    def correct_label_and_id(self):
+        for cnst, _ in self.table_of_label.items():
+            if cnst in self.table_of_id:
+                self.table_of_id.pop(cnst)
